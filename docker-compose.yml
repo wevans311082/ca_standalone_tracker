@@ -1,0 +1,12 @@
+services:
+  tracker:
+    build: .
+    container_name: ce-assessment-tracker
+    ports:
+      - "8080:8000"
+    volumes:
+      - tracker-data:/data
+    restart: unless-stopped
+
+volumes:
+  tracker-data:

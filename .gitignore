@@ -1,0 +1,20 @@
+# Portable Git binaries (installed locally via tools/install-git.ps1)
+tools/MinGit/
+tools/PortableGit/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Node / frontend build
+frontend/node_modules/
+frontend/dist/
+
+# Data & env
+.env
+*.db
+
+# IDE / MCP descriptors
+mcps/
