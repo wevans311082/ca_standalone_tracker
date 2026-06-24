@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react'
-import { X, Trash2 } from 'lucide-react'
-import { COMPANY_SIZES, emptyForm } from '../utils'
+import { X, Trash2, CheckCircle2, RotateCcw } from 'lucide-react'
+import {
+  COMPANY_SIZES,
+  PROGRESS_STATUSES,
+  emptyForm,
+  isCompleted,
+} from '../utils'
 
 export default function AssessmentModal({
   assessment,
   certificationBodies,
   onSave,
   onDelete,
+  onComplete,
+  onReopen,
   onClose,
 }) {
   const [form, setForm] = useState(emptyForm())
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const isEdit = Boolean(assessment?.id)
+  const completed = isEdit && isCompleted(assessment)
 
   useEffect(() => {
     if (assessment?.id) {
@@ -21,7 +29,9 @@ export default function AssessmentModal({
         customer: assessment.customer,
         certification_body: assessment.certification_body,
         company_size: assessment.company_size,
-        assessment_date: assessment.assessment_date,
+        start_date: assessment.start_date,
+        end_date: assessment.end_date,
+        progress_status: assessment.progress_status,
         notes: assessment.notes || '',
       })
     } else if (assessment) {
@@ -34,8 +44,21 @@ export default function AssessmentModal({
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
 
+  const handleStartDateChange = (e) => {
+    const startDate = e.target.value
+    setForm((f) => ({
+      ...f,
+      start_date: startDate,
+      end_date: f.end_date < startDate ? startDate : f.end_date,
+    }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (form.end_date < form.start_date) {
+      setError('End date must be on or after the start date.')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -64,13 +87,60 @@ export default function AssessmentModal({
     }
   }
 
+  const handleComplete = async () => {
+    if (
+      !window.confirm(
+        'Mark this assessment as complete? It will move to the Completed section.',
+      )
+    ) {
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      await onComplete(assessment.id)
+      onClose()
+    } catch (err) {
+      setError(err.message)
+      setSaving(false)
+    }
+  }
+
+  const handleReopen = async () => {
+    if (
+      !window.confirm(
+        'Reopen this assessment? It will return to the active schedule.',
+      )
+    ) {
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      await onReopen(assessment.id)
+      onClose()
+    } catch (err) {
+      setError(err.message)
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">
-            {isEdit ? 'Edit Assessment' : 'New Assessment'}
-          </h2>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              {isEdit
+                ? completed
+                  ? 'Completed Assessment'
+                  : 'Edit Assessment'
+                : 'New Assessment'}
+            </h2>
+            {completed && (
+              <p className="mt-0.5 text-xs text-emerald-600">Completed</p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
@@ -143,16 +213,47 @@ export default function AssessmentModal({
             </div>
           </div>
 
-          <div>
-            <label className="label">Assessment Date</label>
-            <input
-              type="date"
-              className="input-field"
-              value={form.assessment_date}
-              onChange={set('assessment_date')}
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Start Date</label>
+              <input
+                type="date"
+                className="input-field"
+                value={form.start_date}
+                onChange={handleStartDateChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="label">End Date</label>
+              <input
+                type="date"
+                className="input-field"
+                value={form.end_date}
+                onChange={set('end_date')}
+                min={form.start_date}
+                required
+              />
+            </div>
           </div>
+
+          {!completed && (
+            <div>
+              <label className="label">Progress Status</label>
+              <select
+                className="input-field"
+                value={form.progress_status}
+                onChange={set('progress_status')}
+                required
+              >
+                {PROGRESS_STATUSES.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="label">Notes (optional)</label>
@@ -166,19 +267,41 @@ export default function AssessmentModal({
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            {isEdit ? (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={saving}
-                className="btn-danger"
-              >
-                <Trash2 size={16} />
-                Delete
-              </button>
-            ) : (
-              <div />
-            )}
+            <div className="flex gap-2">
+              {isEdit && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={saving}
+                  className="btn-danger"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              )}
+              {isEdit && !completed && (
+                <button
+                  type="button"
+                  onClick={handleComplete}
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
+                >
+                  <CheckCircle2 size={16} />
+                  Mark Complete
+                </button>
+              )}
+              {isEdit && completed && (
+                <button
+                  type="button"
+                  onClick={handleReopen}
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                >
+                  <RotateCcw size={16} />
+                  Reopen
+                </button>
+              )}
+            </div>
             <div className="flex gap-3">
               <button type="button" onClick={onClose} className="btn-secondary">
                 Cancel

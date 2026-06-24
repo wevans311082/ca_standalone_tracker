@@ -6,11 +6,12 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db
+from database import Base, engine, get_db, migrate_db
 from models import Assessment
 from schemas import AssessmentCreate, AssessmentResponse, AssessmentUpdate
 
 Base.metadata.create_all(bind=engine)
+migrate_db()
 
 app = FastAPI(title="CE+ Assessment Tracker")
 
@@ -33,12 +34,17 @@ def health():
 @app.get("/api/assessments", response_model=list[AssessmentResponse])
 def list_assessments(
     certification_body: str | None = None,
+    completed: bool | None = None,
     db: Session = Depends(get_db),
 ):
     query = db.query(Assessment)
     if certification_body:
         query = query.filter(Assessment.certification_body == certification_body)
-    return query.order_by(Assessment.assessment_date.asc()).all()
+    if completed is True:
+        query = query.filter(Assessment.completed_at.isnot(None))
+    elif completed is False:
+        query = query.filter(Assessment.completed_at.is_(None))
+    return query.order_by(Assessment.start_date.asc()).all()
 
 
 @app.get("/api/assessments/{assessment_id}", response_model=AssessmentResponse)

@@ -1,13 +1,15 @@
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { cbColor } from '../utils'
+import { cbColor, calendarEventEnd } from '../utils'
 
 export default function CalendarView({ assessments, onEventClick, onDateClick }) {
   const events = assessments.map((a) => ({
     id: String(a.id),
     title: `${a.customer} — ${a.name}`,
-    date: a.assessment_date,
+    start: a.start_date,
+    end: calendarEventEnd(a.end_date),
+    allDay: true,
     backgroundColor: cbColor(a.certification_body),
     borderColor: cbColor(a.certification_body),
     extendedProps: { assessment: a },

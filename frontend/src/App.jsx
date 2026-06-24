@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CalendarDays, List, Plus, Shield } from 'lucide-react'
 import { api } from './api'
-import { emptyForm } from './utils'
+import { emptyForm, partitionAssessments } from './utils'
 import AssessmentModal from './components/AssessmentModal'
 import Sidebar from './components/Sidebar'
 import CalendarView from './components/CalendarView'
@@ -33,7 +33,9 @@ export default function App() {
   }, [refresh])
 
   const openCreate = (date) => {
-    setEditing(date ? { ...emptyForm(), assessment_date: date } : null)
+    setEditing(
+      date ? { ...emptyForm(), start_date: date, end_date: date } : null,
+    )
     setModalOpen(true)
   }
 
@@ -62,6 +64,21 @@ export default function App() {
     setSelectedId(null)
     await refresh()
   }
+
+  const handleComplete = async (id) => {
+    await api.updateAssessment(id, {
+      completed_at: new Date().toISOString(),
+    })
+    setSelectedId(null)
+    await refresh()
+  }
+
+  const handleReopen = async (id) => {
+    await api.updateAssessment(id, { completed_at: null })
+    await refresh()
+  }
+
+  const { active, completed } = partitionAssessments(assessments)
 
   return (
     <div className="flex h-screen flex-col">
@@ -138,13 +155,14 @@ export default function App() {
               </div>
             ) : view === 'calendar' ? (
               <CalendarView
-                assessments={assessments}
+                assessments={active}
                 onEventClick={openEdit}
                 onDateClick={(date) => openCreate(date)}
               />
             ) : (
               <ListView
-                assessments={assessments}
+                active={active}
+                completed={completed}
                 groupByCb={groupByCb}
                 onSelect={openEdit}
               />
@@ -159,6 +177,8 @@ export default function App() {
           certificationBodies={certificationBodies}
           onSave={handleSave}
           onDelete={handleDelete}
+          onComplete={handleComplete}
+          onReopen={handleReopen}
           onClose={closeModal}
         />
       )}
