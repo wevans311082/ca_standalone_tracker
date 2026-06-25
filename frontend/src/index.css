@@ -89,14 +89,24 @@
   background-color: #fffbeb !important;
   border: 1px dashed #f59e0b !important;
   color: #b45309;
-  padding: 1px 4px;
-  min-height: 1.125rem;
+  padding: 2px 5px;
+  min-height: 1.25rem;
 }
 
 .fc .fc-event.fc-sample-release .fc-sample-release-content {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   overflow: hidden;
   width: 100%;
+  white-space: nowrap;
+}
+
+.fc .fc-event.fc-sample-release .fc-sample-release-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  min-width: 0;
 }

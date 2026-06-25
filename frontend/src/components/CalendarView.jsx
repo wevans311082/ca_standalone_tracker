@@ -19,10 +19,11 @@ function CalendarLegend() {
         <span>Assessment</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="inline-flex h-5 w-6 items-center justify-center rounded border border-dashed border-amber-400 bg-amber-50 text-amber-600">
-          <Package size={10} />
+        <span className="inline-flex items-center gap-1 rounded border border-dashed border-amber-400 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+          <Package size={10} className="shrink-0" />
+          Sample Release
         </span>
-        <span>Sample Release (3 working days before start)</span>
+        <span>3 working days before start</span>
       </div>
     </div>
   )
@@ -56,12 +57,11 @@ function buildSampleReleaseEvents(assessments) {
   }))
 }
 
-function SampleReleaseContent({ event, viewType }) {
-  const compact = viewType === 'dayGridMonth'
+function SampleReleaseContent({ event }) {
   return (
     <div className="fc-sample-release-content" title={event.title}>
-      <Package size={compact ? 10 : 12} className="shrink-0" />
-      {!compact && <span className="truncate">{event.title}</span>}
+      <Package size={11} className="shrink-0" />
+      <span className="fc-sample-release-label">{event.title}</span>
     </div>
   )
 }
@@ -86,12 +86,7 @@ export default function CalendarView({ assessments, onEventClick, onDateClick })
         events={events}
         eventContent={(arg) => {
           if (arg.event.extendedProps.type === 'sample_release') {
-            return (
-              <SampleReleaseContent
-                event={arg.event}
-                viewType={arg.view.type}
-              />
-            )
+            return <SampleReleaseContent event={arg.event} />
           }
           return true
         }}
