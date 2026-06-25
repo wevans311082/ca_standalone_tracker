@@ -14,6 +14,18 @@ import {
   sampleReleaseDate,
 } from '../utils'
 
+function Section({ title, hint, children }) {
+  return (
+    <section className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+      <div className="mb-3">
+        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+        {hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
 export default function AssessmentModal({
   assessment,
   certificationBodies,
@@ -164,9 +176,15 @@ export default function AssessmentModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[min(92vh,880px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
               {isEdit
@@ -180,6 +198,7 @@ export default function AssessmentModal({
             )}
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
           >
@@ -187,245 +206,252 @@ export default function AssessmentModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          {error && (
-            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="modal-scroll min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            {error && (
+              <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
-          <div>
-            <label className="label">Assessment Name</label>
-            <input
-              className="input-field"
-              value={form.name}
-              onChange={set('name')}
-              placeholder="e.g. Annual CE+ Review"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="label">Customer</label>
-            <input
-              className="input-field"
-              value={form.customer}
-              onChange={set('customer')}
-              placeholder="Company or organisation name"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="label">Assessment Type</label>
-            <div className="grid grid-cols-2 gap-3">
-              {ASSESSMENT_TYPES.map((type) => {
-                const style = assessmentTypeStyle(type.value)
-                const selected = form.assessment_type === type.value
-                return (
-                  <label
-                    key={type.value}
-                    className={`flex cursor-pointer items-center justify-center rounded-lg border-2 px-4 py-3 text-sm font-semibold transition-all ${
-                      selected ? 'shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
-                    }`}
-                    style={
-                      selected
-                        ? {
-                            borderColor: style.accent,
-                            backgroundColor: style.bg,
-                            color: style.text,
-                          }
-                        : undefined
-                    }
-                  >
-                    <input
-                      type="radio"
-                      name="assessment_type"
-                      value={type.value}
-                      checked={selected}
-                      onChange={set('assessment_type')}
-                      className="sr-only"
-                    />
-                    {type.label}
-                  </label>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Certification Body</label>
-              <input
-                className="input-field"
-                value={form.certification_body}
-                onChange={set('certification_body')}
-                placeholder="e.g. IASME, CREST"
-                list="cb-suggestions"
-                required
-              />
-              <datalist id="cb-suggestions">
-                {certificationBodies.map((cb) => (
-                  <option key={cb} value={cb} />
-                ))}
-              </datalist>
-            </div>
-
-            <div>
-              <label className="label">Company Size</label>
-              <select
-                className="input-field"
-                value={form.company_size}
-                onChange={set('company_size')}
-                required
-              >
-                {COMPANY_SIZES.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">VSA Date (optional)</label>
-              <input
-                type="date"
-                className="input-field"
-                value={form.vsa_date}
-                onChange={set('vsa_date')}
-              />
-            </div>
-            <div />
-          </div>
-
-          <div>
-            <label className="label">Calendar Reminders</label>
-            <p className="mb-3 text-xs text-slate-400">
-              Toggle extra calendar pills on or off. All are enabled by default.
-            </p>
-            <div className="space-y-2">
-              {CALENDAR_PILL_TOGGLES.map((pill) => {
-                const enabled = Boolean(form[pill.field])
-                const preview = pillPreviewDate(pill.field)
-                const needsVsa = pill.field === 'show_ce_windows' && !form.vsa_date
-                return (
-                  <label
-                    key={pill.field}
-                    className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
-                      enabled
-                        ? 'border-slate-200 bg-white'
-                        : 'border-slate-100 bg-slate-50 opacity-70'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={enabled}
-                      onChange={togglePill(pill.field)}
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-accent focus:ring-accent"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-800">{pill.label}</p>
-                      <p className="text-xs text-slate-500">{pill.hint}</p>
-                      {enabled && preview && (
-                        <p className="mt-0.5 text-xs font-medium text-slate-600">
-                          Shows on {preview}
-                        </p>
-                      )}
-                      {enabled && needsVsa && (
-                        <p className="mt-0.5 text-xs text-amber-600">
-                          Set a VSA date to show this pill
-                        </p>
-                      )}
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div className="space-y-5">
+                <Section title="Assessment details">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <label className="label">Assessment Name</label>
+                      <input
+                        className="input-field"
+                        value={form.name}
+                        onChange={set('name')}
+                        placeholder="e.g. Annual CE+ Review"
+                        required
+                      />
                     </div>
-                  </label>
-                )
-              })}
-            </div>
-          </div>
+                    <div className="sm:col-span-2">
+                      <label className="label">Customer</label>
+                      <input
+                        className="input-field"
+                        value={form.customer}
+                        onChange={set('customer')}
+                        placeholder="Company or organisation name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Certification Body</label>
+                      <input
+                        className="input-field"
+                        value={form.certification_body}
+                        onChange={set('certification_body')}
+                        placeholder="e.g. IASME, CREST"
+                        list="cb-suggestions"
+                        required
+                      />
+                      <datalist id="cb-suggestions">
+                        {certificationBodies.map((cb) => (
+                          <option key={cb} value={cb} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div>
+                      <label className="label">Company Size</label>
+                      <select
+                        className="input-field"
+                        value={form.company_size}
+                        onChange={set('company_size')}
+                        required
+                      >
+                        {COMPANY_SIZES.map((size) => (
+                          <option key={size} value={size}>
+                            {size}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="label">Assessment Type</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {ASSESSMENT_TYPES.map((type) => {
+                          const style = assessmentTypeStyle(type.value)
+                          const selected = form.assessment_type === type.value
+                          return (
+                            <label
+                              key={type.value}
+                              className={`flex cursor-pointer items-center justify-center rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-all ${
+                                selected
+                                  ? 'shadow-sm'
+                                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                              }`}
+                              style={
+                                selected
+                                  ? {
+                                      borderColor: style.accent,
+                                      backgroundColor: style.bg,
+                                      color: style.text,
+                                    }
+                                  : undefined
+                              }
+                            >
+                              <input
+                                type="radio"
+                                name="assessment_type"
+                                value={type.value}
+                                checked={selected}
+                                onChange={set('assessment_type')}
+                                className="sr-only"
+                              />
+                              {type.label}
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </Section>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Start Date</label>
-              <input
-                type="date"
-                className="input-field"
-                value={form.start_date}
-                onChange={handleStartDateChange}
-                required
-              />
-            </div>
-            <div>
-              <label className="label">End Date</label>
-              <input
-                type="date"
-                className="input-field"
-                value={form.end_date}
-                onChange={set('end_date')}
-                min={form.start_date}
-                required
-              />
-            </div>
-          </div>
+                <Section title="Schedule">
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <label className="label">Start Date</label>
+                      <input
+                        type="date"
+                        className="input-field"
+                        value={form.start_date}
+                        onChange={handleStartDateChange}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="label">End Date</label>
+                      <input
+                        type="date"
+                        className="input-field"
+                        value={form.end_date}
+                        onChange={set('end_date')}
+                        min={form.start_date}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="label">VSA Date</label>
+                      <input
+                        type="date"
+                        className="input-field"
+                        value={form.vsa_date}
+                        onChange={set('vsa_date')}
+                      />
+                    </div>
+                  </div>
+                  {!completed && (
+                    <div className="mt-4">
+                      <label className="label">Progress Status</label>
+                      <select
+                        className="input-field"
+                        value={form.progress_status}
+                        onChange={set('progress_status')}
+                        required
+                      >
+                        {PROGRESS_STATUSES.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </Section>
 
-          {isEdit && !completed && (
-            <div>
-              <label className="label">Sample Release Tasks</label>
-              <p className="mb-2 text-xs text-slate-400">
-                Due {sampleReleaseDate(form.start_date)} (3 working days before start)
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {SAMPLE_SUBTASKS.map((task) => (
-                  <label
-                    key={task.field}
-                    className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"
+                <Section title="Notes" hint="Optional additional details">
+                  <textarea
+                    className="input-field min-h-[88px] resize-y"
+                    rows={3}
+                    value={form.notes}
+                    onChange={set('notes')}
+                    placeholder="Additional details..."
+                  />
+                </Section>
+              </div>
+
+              <div className="space-y-5">
+                <Section
+                  title="Calendar reminders"
+                  hint="Toggle pills on the calendar. All enabled by default."
+                >
+                  <div className="grid gap-2 sm:grid-cols-1">
+                    {CALENDAR_PILL_TOGGLES.map((pill) => {
+                      const enabled = Boolean(form[pill.field])
+                      const preview = pillPreviewDate(pill.field)
+                      const needsVsa =
+                        pill.field === 'show_ce_windows' && !form.vsa_date
+                      return (
+                        <label
+                          key={pill.field}
+                          className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+                            enabled
+                              ? 'border-slate-200 bg-white'
+                              : 'border-slate-100 bg-slate-100/80 opacity-70'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={enabled}
+                            onChange={togglePill(pill.field)}
+                            className="h-4 w-4 shrink-0 rounded border-slate-300 text-accent focus:ring-accent"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                              <p className="text-sm font-medium text-slate-800">
+                                {pill.label}
+                              </p>
+                              {enabled && preview && (
+                                <p className="text-xs font-medium text-slate-600">
+                                  {preview}
+                                </p>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500">{pill.hint}</p>
+                            {enabled && needsVsa && (
+                              <p className="mt-0.5 text-xs text-amber-600">
+                                Set a VSA date to show this pill
+                              </p>
+                            )}
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </Section>
+
+                {isEdit && !completed && (
+                  <Section
+                    title="Sample release tasks"
+                    hint={`Due ${sampleReleaseDate(form.start_date)} · 3 working days before start`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={Boolean(form[task.field])}
-                      onChange={toggleSubtask(task.field)}
-                      className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
-                    />
-                    {task.label}
-                  </label>
-                ))}
+                    <div className="flex flex-wrap gap-2">
+                      {SAMPLE_SUBTASKS.map((task) => (
+                        <label
+                          key={task.field}
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={Boolean(form[task.field])}
+                            onChange={toggleSubtask(task.field)}
+                            className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                          />
+                          {task.label}
+                        </label>
+                      ))}
+                    </div>
+                  </Section>
+                )}
               </div>
             </div>
-          )}
-
-          {!completed && (
-            <div>
-              <label className="label">Progress Status</label>
-              <select
-                className="input-field"
-                value={form.progress_status}
-                onChange={set('progress_status')}
-                required
-              >
-                {PROGRESS_STATUSES.map((status) => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div>
-            <label className="label">Notes (optional)</label>
-            <textarea
-              className="input-field resize-none"
-              rows={3}
-              value={form.notes}
-              onChange={set('notes')}
-              placeholder="Additional details..."
-            />
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex gap-2">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4">
+            <div className="flex flex-wrap gap-2">
               {isEdit && (
                 <button
                   type="button"
