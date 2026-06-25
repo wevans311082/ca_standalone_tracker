@@ -5,8 +5,24 @@ import {
   cbColor,
   progressStatusLabel,
   progressStatusColor,
+  assessmentTypeLabel,
+  assessmentTypeStyle,
   isCompleted,
 } from '../utils'
+
+function AssessmentTypeBadge({ type, prominent = false }) {
+  const style = assessmentTypeStyle(type)
+  return (
+    <span
+      className={`shrink-0 rounded-md font-bold uppercase tracking-wide ${
+        prominent ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-[10px]'
+      }`}
+      style={{ backgroundColor: style.bg, color: style.text }}
+    >
+      {assessmentTypeLabel(type)}
+    </span>
+  )
+}
 
 function StatusBadge({ status }) {
   const { bg, text } = progressStatusColor(status)
@@ -22,17 +38,25 @@ function StatusBadge({ status }) {
 
 function AssessmentCard({ assessment, onSelect, dimmed = false }) {
   const color = cbColor(assessment.certification_body)
+  const typeStyle = assessmentTypeStyle(assessment.assessment_type)
   const completed = isCompleted(assessment)
 
   return (
     <button
       onClick={() => onSelect(assessment)}
-      className={`group w-full rounded-lg border border-slate-100 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-200 hover:shadow-md ${
+      className={`group relative w-full overflow-hidden rounded-lg border border-slate-100 bg-white p-4 pl-5 text-left shadow-sm transition-all hover:border-slate-200 hover:shadow-md ${
         dimmed ? 'opacity-75' : ''
       }`}
     >
+      <div
+        className="absolute bottom-0 left-0 top-0 w-1.5"
+        style={{ backgroundColor: typeStyle.accent }}
+      />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <AssessmentTypeBadge type={assessment.assessment_type} prominent />
+          </div>
           <h3 className="font-semibold text-slate-900 group-hover:text-accent">
             {assessment.name}
           </h3>

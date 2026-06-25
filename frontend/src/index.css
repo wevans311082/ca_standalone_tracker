@@ -84,3 +84,19 @@
 .fc .fc-daygrid-event {
   margin: 1px 2px;
 }
+
+.fc .fc-event.fc-sample-release {
+  background-color: #fffbeb !important;
+  border: 1px dashed #f59e0b !important;
+  color: #b45309;
+  padding: 1px 4px;
+  min-height: 1.125rem;
+}
+
+.fc .fc-event.fc-sample-release .fc-sample-release-content {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+  width: 100%;
+}

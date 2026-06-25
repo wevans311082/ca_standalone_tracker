@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { X, Trash2, CheckCircle2, RotateCcw } from 'lucide-react'
 import {
+  ASSESSMENT_TYPES,
   COMPANY_SIZES,
   PROGRESS_STATUSES,
+  assessmentTypeStyle,
   emptyForm,
   isCompleted,
 } from '../utils'
@@ -29,6 +31,7 @@ export default function AssessmentModal({
         customer: assessment.customer,
         certification_body: assessment.certification_body,
         company_size: assessment.company_size,
+        assessment_type: assessment.assessment_type,
         start_date: assessment.start_date,
         end_date: assessment.end_date,
         progress_status: assessment.progress_status,
@@ -176,6 +179,43 @@ export default function AssessmentModal({
               placeholder="Company or organisation name"
               required
             />
+          </div>
+
+          <div>
+            <label className="label">Assessment Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              {ASSESSMENT_TYPES.map((type) => {
+                const style = assessmentTypeStyle(type.value)
+                const selected = form.assessment_type === type.value
+                return (
+                  <label
+                    key={type.value}
+                    className={`flex cursor-pointer items-center justify-center rounded-lg border-2 px-4 py-3 text-sm font-semibold transition-all ${
+                      selected ? 'shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                    }`}
+                    style={
+                      selected
+                        ? {
+                            borderColor: style.accent,
+                            backgroundColor: style.bg,
+                            color: style.text,
+                          }
+                        : undefined
+                    }
+                  >
+                    <input
+                      type="radio"
+                      name="assessment_type"
+                      value={type.value}
+                      checked={selected}
+                      onChange={set('assessment_type')}
+                      className="sr-only"
+                    />
+                    {type.label}
+                  </label>
+                )
+              })}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

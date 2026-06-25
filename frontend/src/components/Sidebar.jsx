@@ -5,11 +5,14 @@ import {
   cbColor,
   progressStatusLabel,
   progressStatusColor,
+  assessmentTypeLabel,
+  assessmentTypeStyle,
   partitionAssessments,
 } from '../utils'
 
 function SidebarItem({ assessment, isSelected, onSelect }) {
   const color = cbColor(assessment.certification_body)
+  const typeStyle = assessmentTypeStyle(assessment.assessment_type)
   const statusColor = progressStatusColor(assessment.progress_status)
 
   return (
@@ -26,9 +29,20 @@ function SidebarItem({ assessment, isSelected, onSelect }) {
             style={{ backgroundColor: color }}
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-900">
-              {assessment.name}
-            </p>
+            <div className="flex items-center gap-2">
+              <span
+                className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                style={{
+                  backgroundColor: typeStyle.bg,
+                  color: typeStyle.text,
+                }}
+              >
+                {assessmentTypeLabel(assessment.assessment_type)}
+              </span>
+              <p className="truncate text-sm font-medium text-slate-900">
+                {assessment.name}
+              </p>
+            </div>
             <p className="truncate text-xs text-slate-500">{assessment.customer}</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-slate-600">
@@ -62,6 +76,7 @@ function SidebarItem({ assessment, isSelected, onSelect }) {
 
 function CompletedItem({ assessment, isSelected, onSelect }) {
   const color = cbColor(assessment.certification_body)
+  const typeStyle = assessmentTypeStyle(assessment.assessment_type)
 
   return (
     <li>
@@ -74,9 +89,20 @@ function CompletedItem({ assessment, isSelected, onSelect }) {
         <div className="flex items-start gap-3">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-500" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-700">
-              {assessment.name}
-            </p>
+            <div className="flex items-center gap-2">
+              <span
+                className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide opacity-80"
+                style={{
+                  backgroundColor: typeStyle.bg,
+                  color: typeStyle.text,
+                }}
+              >
+                {assessmentTypeLabel(assessment.assessment_type)}
+              </span>
+              <p className="truncate text-sm font-medium text-slate-700">
+                {assessment.name}
+              </p>
+            </div>
             <p className="truncate text-xs text-slate-400">{assessment.customer}</p>
             <div className="mt-1 flex items-center gap-2">
               <span className="text-xs text-slate-500">

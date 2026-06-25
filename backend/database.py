@@ -53,6 +53,14 @@ def migrate_db() -> None:
                 text("ALTER TABLE assessments ADD COLUMN completed_at DATETIME")
             )
 
+        if "assessment_type" not in columns:
+            conn.execute(
+                text(
+                    "ALTER TABLE assessments ADD COLUMN assessment_type "
+                    "VARCHAR(50) DEFAULT 'willow' NOT NULL"
+                )
+            )
+
 
 def get_db():
     db = SessionLocal()

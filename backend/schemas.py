@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, model_validator
 
 ProgressStatus = Literal["not_started", "in_progress", "awaiting_client", "on_hold"]
+AssessmentType = Literal["willow", "danzel"]
 
 
 class AssessmentBase(BaseModel):
@@ -11,6 +12,7 @@ class AssessmentBase(BaseModel):
     customer: str = Field(..., min_length=1, max_length=255)
     certification_body: str = Field(..., min_length=1, max_length=255)
     company_size: str = Field(..., min_length=1, max_length=50)
+    assessment_type: AssessmentType = "willow"
     start_date: date
     end_date: date
     progress_status: ProgressStatus = "not_started"
@@ -32,6 +34,7 @@ class AssessmentUpdate(BaseModel):
     customer: str | None = Field(None, min_length=1, max_length=255)
     certification_body: str | None = Field(None, min_length=1, max_length=255)
     company_size: str | None = Field(None, min_length=1, max_length=50)
+    assessment_type: AssessmentType | None = None
     start_date: date | None = None
     end_date: date | None = None
     progress_status: ProgressStatus | None = None

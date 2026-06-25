@@ -1,4 +1,4 @@
-import { addDays, format, parseISO } from 'date-fns'
+import { addDays, format, getDay, parseISO, subDays } from 'date-fns'
 
 export const COMPANY_SIZES = [
   'Micro (1–9 employees)',
@@ -6,6 +6,24 @@ export const COMPANY_SIZES = [
   'Medium (50–249 employees)',
   'Large (250+ employees)',
 ]
+
+export const ASSESSMENT_TYPES = [
+  { value: 'willow', label: 'Willow' },
+  { value: 'danzel', label: 'Danzel' },
+]
+
+const ASSESSMENT_TYPE_STYLES = {
+  willow: { bg: '#d1fae5', text: '#047857', accent: '#10b981' },
+  danzel: { bg: '#ede9fe', text: '#6d28d9', accent: '#8b5cf6' },
+}
+
+export function assessmentTypeLabel(type) {
+  return ASSESSMENT_TYPES.find((t) => t.value === type)?.label ?? type
+}
+
+export function assessmentTypeStyle(type) {
+  return ASSESSMENT_TYPE_STYLES[type] ?? ASSESSMENT_TYPE_STYLES.willow
+}
 
 export const PROGRESS_STATUSES = [
   { value: 'not_started', label: 'Not Started' },
@@ -86,6 +104,31 @@ export function calendarEventEnd(endDate) {
   return format(addDays(parseISO(endDate), 1), 'yyyy-MM-dd')
 }
 
+export const SAMPLE_RELEASE_COLOR = '#f59e0b'
+
+function isWeekend(date) {
+  const day = getDay(date)
+  return day === 0 || day === 6
+}
+
+export function subtractWorkingDays(dateStr, workingDays) {
+  let date = parseISO(dateStr)
+  let remaining = workingDays
+  while (remaining > 0) {
+    date = subDays(date, 1)
+    if (!isWeekend(date)) remaining -= 1
+  }
+  return format(date, 'yyyy-MM-dd')
+}
+
+export function sampleReleaseDate(startDate) {
+  return subtractWorkingDays(startDate, 3)
+}
+
+export function sampleReleaseTitle(customer) {
+  return `${customer} Sample Release`
+}
+
 export function groupByCB(assessments) {
   const groups = {}
   for (const a of assessments) {
@@ -111,6 +154,7 @@ export const emptyForm = () => {
     customer: '',
     certification_body: '',
     company_size: COMPANY_SIZES[1],
+    assessment_type: 'willow',
     start_date: today,
     end_date: today,
     progress_status: 'not_started',

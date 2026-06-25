@@ -12,6 +12,8 @@ PROGRESS_STATUSES = (
     "on_hold",
 )
 
+ASSESSMENT_TYPES = ("willow", "danzel")
+
 
 class Assessment(Base):
     __tablename__ = "assessments"
@@ -21,6 +23,9 @@ class Assessment(Base):
     customer: Mapped[str] = mapped_column(String(255), nullable=False)
     certification_body: Mapped[str] = mapped_column(String(255), nullable=False)
     company_size: Mapped[str] = mapped_column(String(50), nullable=False)
+    assessment_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="willow"
+    )
     start_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     end_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     progress_status: Mapped[str] = mapped_column(
