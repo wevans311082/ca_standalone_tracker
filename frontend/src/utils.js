@@ -129,6 +129,12 @@ export function sampleReleaseTitle(customer) {
   return `${customer} Sample Release`
 }
 
+export const SAMPLE_SUBTASKS = [
+  { field: 'sample_sampled', label: 'Sampled' },
+  { field: 'sample_agents', label: 'Agents' },
+  { field: 'sample_invites', label: 'Invites' },
+]
+
 export function groupByCB(assessments) {
   const groups = {}
   for (const a of assessments) {
@@ -158,6 +164,9 @@ export const emptyForm = () => {
     start_date: today,
     end_date: today,
     progress_status: 'not_started',
+    sample_sampled: false,
+    sample_agents: false,
+    sample_invites: false,
     notes: '',
   }
 }

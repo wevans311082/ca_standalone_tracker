@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +16,24 @@ Base.metadata.create_all(bind=engine)
 migrate_db()
 
 app = FastAPI(title="CE+ Assessment Tracker")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, HTTPException):
+        raise exc
+    if request.url.path.startswith("/api/"):
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(exc)},
+        )
+    raise exc
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,7 +79,11 @@ def get_assessment(assessment_id: int, db: Session = Depends(get_db)):
 def create_assessment(payload: AssessmentCreate, db: Session = Depends(get_db)):
     assessment = Assessment(**payload.model_dump())
     db.add(assessment)
-    db.commit()
+    try:
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     db.refresh(assessment)
     return assessment
 

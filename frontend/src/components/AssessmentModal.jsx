@@ -4,9 +4,11 @@ import {
   ASSESSMENT_TYPES,
   COMPANY_SIZES,
   PROGRESS_STATUSES,
+  SAMPLE_SUBTASKS,
   assessmentTypeStyle,
   emptyForm,
   isCompleted,
+  sampleReleaseDate,
 } from '../utils'
 
 export default function AssessmentModal({
@@ -35,6 +37,9 @@ export default function AssessmentModal({
         start_date: assessment.start_date,
         end_date: assessment.end_date,
         progress_status: assessment.progress_status,
+        sample_sampled: Boolean(assessment.sample_sampled),
+        sample_agents: Boolean(assessment.sample_agents),
+        sample_invites: Boolean(assessment.sample_invites),
         notes: assessment.notes || '',
       })
     } else if (assessment) {
@@ -46,6 +51,9 @@ export default function AssessmentModal({
   }, [assessment])
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+
+  const toggleSubtask = (field) => (e) =>
+    setForm((f) => ({ ...f, [field]: e.target.checked }))
 
   const handleStartDateChange = (e) => {
     const startDate = e.target.value
@@ -276,6 +284,31 @@ export default function AssessmentModal({
               />
             </div>
           </div>
+
+          {isEdit && !completed && (
+            <div>
+              <label className="label">Sample Release Tasks</label>
+              <p className="mb-2 text-xs text-slate-400">
+                Due {sampleReleaseDate(form.start_date)} (3 working days before start)
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {SAMPLE_SUBTASKS.map((task) => (
+                  <label
+                    key={task.field}
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={Boolean(form[task.field])}
+                      onChange={toggleSubtask(task.field)}
+                      className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    {task.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {!completed && (
             <div>

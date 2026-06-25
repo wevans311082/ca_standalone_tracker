@@ -8,6 +8,7 @@ import {
   sampleReleaseDate,
   sampleReleaseTitle,
   SAMPLE_RELEASE_COLOR,
+  SAMPLE_SUBTASKS,
 } from '../utils'
 
 function CalendarLegend() {
@@ -18,12 +19,21 @@ function CalendarLegend() {
         <span className="inline-block h-3 w-6 rounded bg-blue-500" />
         <span>Assessment</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1 rounded border border-dashed border-amber-400 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
           <Package size={10} className="shrink-0" />
           Sample Release
         </span>
         <span>3 working days before start</span>
+        <span className="text-slate-400">·</span>
+        <span className="inline-flex items-center gap-2 text-[10px] text-amber-800">
+          {SAMPLE_SUBTASKS.map((task) => (
+            <span key={task.field} className="inline-flex items-center gap-0.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-sm border border-amber-400 bg-white" />
+              {task.label}
+            </span>
+          ))}
+        </span>
       </div>
     </div>
   )
@@ -57,16 +67,59 @@ function buildSampleReleaseEvents(assessments) {
   }))
 }
 
-function SampleReleaseContent({ event }) {
+function SampleSubtask({ field, label, checked, onToggle }) {
+  const stop = (e) => e.stopPropagation()
+
   return (
-    <div className="fc-sample-release-content" title={event.title}>
-      <Package size={11} className="shrink-0" />
-      <span className="fc-sample-release-label">{event.title}</span>
+    <label
+      className={`fc-sample-subtask ${checked ? 'fc-sample-subtask-checked' : ''}`}
+      onClick={stop}
+      onMouseDown={stop}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => {
+          stop(e)
+          onToggle(field, e.target.checked)
+        }}
+        onClick={stop}
+      />
+      <span>{label}</span>
+    </label>
+  )
+}
+
+function SampleReleaseContent({ assessment, onToggleSubtask }) {
+  return (
+    <div className="fc-sample-release-content">
+      <div className="fc-sample-release-header" title={sampleReleaseTitle(assessment.customer)}>
+        <Package size={11} className="shrink-0" />
+        <span className="fc-sample-release-label">
+          {sampleReleaseTitle(assessment.customer)}
+        </span>
+      </div>
+      <div className="fc-sample-subtasks">
+        {SAMPLE_SUBTASKS.map((task) => (
+          <SampleSubtask
+            key={task.field}
+            field={task.field}
+            label={task.label}
+            checked={Boolean(assessment[task.field])}
+            onToggle={(field, value) => onToggleSubtask(assessment.id, field, value)}
+          />
+        ))}
+      </div>
     </div>
   )
 }
 
-export default function CalendarView({ assessments, onEventClick, onDateClick }) {
+export default function CalendarView({
+  assessments,
+  onEventClick,
+  onDateClick,
+  onToggleSubtask,
+}) {
   const events = [
     ...buildSampleReleaseEvents(assessments),
     ...buildAssessmentEvents(assessments),
@@ -86,18 +139,24 @@ export default function CalendarView({ assessments, onEventClick, onDateClick })
         events={events}
         eventContent={(arg) => {
           if (arg.event.extendedProps.type === 'sample_release') {
-            return <SampleReleaseContent event={arg.event} />
+            return (
+              <SampleReleaseContent
+                assessment={arg.event.extendedProps.assessment}
+                onToggleSubtask={onToggleSubtask}
+              />
+            )
           }
           return true
         }}
         eventClick={(info) => {
+          if (info.jsEvent.target.closest('.fc-sample-subtask')) return
           onEventClick(info.event.extendedProps.assessment)
         }}
         dateClick={(info) => {
           onDateClick(info.dateStr)
         }}
         height="auto"
-        dayMaxEvents={4}
+        dayMaxEvents={5}
         eventDisplay="block"
         fixedWeekCount={false}
         eventOrder="order"

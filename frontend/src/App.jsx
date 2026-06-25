@@ -78,6 +78,18 @@ export default function App() {
     await refresh()
   }
 
+  const handleToggleSampleSubtask = async (id, field, value) => {
+    setAssessments((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)),
+    )
+    try {
+      await api.updateAssessment(id, { [field]: value })
+    } catch (err) {
+      console.error(err)
+      await refresh()
+    }
+  }
+
   const { active, completed } = partitionAssessments(assessments)
 
   return (
@@ -158,6 +170,7 @@ export default function App() {
                 assessments={active}
                 onEventClick={openEdit}
                 onDateClick={(date) => openCreate(date)}
+                onToggleSubtask={handleToggleSampleSubtask}
               />
             ) : (
               <ListView

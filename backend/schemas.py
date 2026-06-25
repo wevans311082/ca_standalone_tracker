@@ -16,6 +16,9 @@ class AssessmentBase(BaseModel):
     start_date: date
     end_date: date
     progress_status: ProgressStatus = "not_started"
+    sample_sampled: bool = False
+    sample_agents: bool = False
+    sample_invites: bool = False
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -39,6 +42,9 @@ class AssessmentUpdate(BaseModel):
     end_date: date | None = None
     progress_status: ProgressStatus | None = None
     completed_at: datetime | None = None
+    sample_sampled: bool | None = None
+    sample_agents: bool | None = None
+    sample_invites: bool | None = None
     notes: str | None = None
 
     @model_validator(mode="after")
