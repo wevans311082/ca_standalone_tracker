@@ -40,6 +40,10 @@ def _rebuild_assessments_table(conn, columns: set[str]) -> None:
                 sample_sampled BOOLEAN NOT NULL DEFAULT 0,
                 sample_agents BOOLEAN NOT NULL DEFAULT 0,
                 sample_invites BOOLEAN NOT NULL DEFAULT 0,
+                vsa_date DATE,
+                show_sample_release BOOLEAN NOT NULL DEFAULT 1,
+                show_ce_windows BOOLEAN NOT NULL DEFAULT 1,
+                show_remediation_window BOOLEAN NOT NULL DEFAULT 1,
                 notes TEXT,
                 created_at DATETIME,
                 updated_at DATETIME
@@ -80,6 +84,20 @@ def _rebuild_assessments_table(conn, columns: set[str]) -> None:
     invites_expr = (
         "COALESCE(sample_invites, 0)" if "sample_invites" in columns else "0"
     )
+    vsa_expr = "vsa_date" if "vsa_date" in columns else "NULL"
+    sample_pill_expr = (
+        "COALESCE(show_sample_release, 1)"
+        if "show_sample_release" in columns
+        else "1"
+    )
+    ce_pill_expr = (
+        "COALESCE(show_ce_windows, 1)" if "show_ce_windows" in columns else "1"
+    )
+    remediation_pill_expr = (
+        "COALESCE(show_remediation_window, 1)"
+        if "show_remediation_window" in columns
+        else "1"
+    )
 
     conn.execute(
         text(
@@ -88,7 +106,8 @@ def _rebuild_assessments_table(conn, columns: set[str]) -> None:
                 id, name, customer, certification_body, company_size,
                 assessment_type, start_date, end_date, progress_status,
                 completed_at, sample_sampled, sample_agents, sample_invites,
-                notes, created_at, updated_at
+                vsa_date, show_sample_release, show_ce_windows,
+                show_remediation_window, notes, created_at, updated_at
             )
             SELECT
                 id, name, customer, certification_body, company_size,
@@ -100,6 +119,10 @@ def _rebuild_assessments_table(conn, columns: set[str]) -> None:
                 {sampled_expr},
                 {agents_expr},
                 {invites_expr},
+                {vsa_expr},
+                {sample_pill_expr},
+                {ce_pill_expr},
+                {remediation_pill_expr},
                 notes, created_at, updated_at
             FROM assessments
             """
@@ -177,6 +200,24 @@ def migrate_db() -> None:
                     text(
                         f"ALTER TABLE assessments ADD COLUMN {column} "
                         "BOOLEAN DEFAULT 0 NOT NULL"
+                    )
+                )
+                columns = _table_columns(conn)
+
+        if "vsa_date" not in columns:
+            conn.execute(text("ALTER TABLE assessments ADD COLUMN vsa_date DATE"))
+            columns = _table_columns(conn)
+
+        for column in (
+            "show_sample_release",
+            "show_ce_windows",
+            "show_remediation_window",
+        ):
+            if column not in columns:
+                conn.execute(
+                    text(
+                        f"ALTER TABLE assessments ADD COLUMN {column} "
+                        "BOOLEAN DEFAULT 1 NOT NULL"
                     )
                 )
                 columns = _table_columns(conn)

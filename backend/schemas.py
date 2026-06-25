@@ -19,6 +19,10 @@ class AssessmentBase(BaseModel):
     sample_sampled: bool = False
     sample_agents: bool = False
     sample_invites: bool = False
+    vsa_date: date | None = None
+    show_sample_release: bool = True
+    show_ce_windows: bool = True
+    show_remediation_window: bool = True
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -45,6 +49,10 @@ class AssessmentUpdate(BaseModel):
     sample_sampled: bool | None = None
     sample_agents: bool | None = None
     sample_invites: bool | None = None
+    vsa_date: date | None = None
+    show_sample_release: bool | None = None
+    show_ce_windows: bool | None = None
+    show_remediation_window: bool | None = None
     notes: str | None = None
 
     @model_validator(mode="after")

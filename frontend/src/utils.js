@@ -105,6 +105,30 @@ export function calendarEventEnd(endDate) {
 }
 
 export const SAMPLE_RELEASE_COLOR = '#f59e0b'
+export const CE_WINDOWS_COLOR = '#6366f1'
+export const REMEDIATION_COLOR = '#f43f5e'
+
+export const CALENDAR_PILL_TOGGLES = [
+  {
+    field: 'show_sample_release',
+    label: 'Sample Release',
+    hint: '3 working days before start',
+  },
+  {
+    field: 'show_ce_windows',
+    label: 'CE+ Windows',
+    hint: '90 days before VSA date',
+  },
+  {
+    field: 'show_remediation_window',
+    label: 'Remediation Window',
+    hint: '30 days after start',
+  },
+]
+
+export function pillEnabled(assessment, field) {
+  return assessment[field] !== false
+}
 
 function isWeekend(date) {
   const day = getDay(date)
@@ -127,6 +151,30 @@ export function sampleReleaseDate(startDate) {
 
 export function sampleReleaseTitle(customer) {
   return `${customer} Sample Release`
+}
+
+export function addCalendarDays(dateStr, days) {
+  return format(addDays(parseISO(dateStr), days), 'yyyy-MM-dd')
+}
+
+export function subtractCalendarDays(dateStr, days) {
+  return format(subDays(parseISO(dateStr), days), 'yyyy-MM-dd')
+}
+
+export function ceWindowsDate(vsaDate) {
+  return subtractCalendarDays(vsaDate, 90)
+}
+
+export function remediationWindowDate(startDate) {
+  return addCalendarDays(startDate, 30)
+}
+
+export function ceWindowsTitle(customer) {
+  return `${customer} CE+ Windows`
+}
+
+export function remediationWindowTitle(customer) {
+  return `${customer} Remediation Window`
 }
 
 export const SAMPLE_SUBTASKS = [
@@ -167,6 +215,10 @@ export const emptyForm = () => {
     sample_sampled: false,
     sample_agents: false,
     sample_invites: false,
+    vsa_date: '',
+    show_sample_release: true,
+    show_ce_windows: true,
+    show_remediation_window: true,
     notes: '',
   }
 }

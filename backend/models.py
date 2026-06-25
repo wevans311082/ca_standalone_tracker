@@ -35,6 +35,14 @@ class Assessment(Base):
     sample_sampled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     sample_agents: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     sample_invites: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    vsa_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    show_sample_release: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True
+    )
+    show_ce_windows: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    show_remediation_window: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True
+    )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(

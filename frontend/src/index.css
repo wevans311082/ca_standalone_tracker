@@ -158,3 +158,41 @@
   text-decoration: line-through;
   opacity: 0.75;
 }
+
+.fc .fc-event.fc-ce-windows,
+.fc .fc-event.fc-remediation-window {
+  padding: 2px 5px;
+  min-height: 1.25rem;
+}
+
+.fc .fc-event.fc-ce-windows {
+  background-color: #eef2ff !important;
+  border: 1px dashed #6366f1 !important;
+  color: #4338ca;
+}
+
+.fc .fc-event.fc-remediation-window {
+  background-color: #fff1f2 !important;
+  border: 1px dashed #f43f5e !important;
+  color: #be123c;
+}
+
+.fc .fc-event.fc-ce-windows .fc-reminder-pill-content,
+.fc .fc-event.fc-remediation-window .fc-reminder-pill-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.fc .fc-event.fc-ce-windows .fc-reminder-pill-label,
+.fc .fc-event.fc-remediation-window .fc-reminder-pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  min-width: 0;
+}

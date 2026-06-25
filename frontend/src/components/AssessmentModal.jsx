@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { X, Trash2, CheckCircle2, RotateCcw } from 'lucide-react'
 import {
   ASSESSMENT_TYPES,
+  CALENDAR_PILL_TOGGLES,
   COMPANY_SIZES,
   PROGRESS_STATUSES,
   SAMPLE_SUBTASKS,
   assessmentTypeStyle,
+  ceWindowsDate,
   emptyForm,
   isCompleted,
+  remediationWindowDate,
   sampleReleaseDate,
 } from '../utils'
 
@@ -40,6 +43,10 @@ export default function AssessmentModal({
         sample_sampled: Boolean(assessment.sample_sampled),
         sample_agents: Boolean(assessment.sample_agents),
         sample_invites: Boolean(assessment.sample_invites),
+        vsa_date: assessment.vsa_date || '',
+        show_sample_release: assessment.show_sample_release !== false,
+        show_ce_windows: assessment.show_ce_windows !== false,
+        show_remediation_window: assessment.show_remediation_window !== false,
         notes: assessment.notes || '',
       })
     } else if (assessment) {
@@ -54,6 +61,22 @@ export default function AssessmentModal({
 
   const toggleSubtask = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e.target.checked }))
+
+  const togglePill = (field) => (e) =>
+    setForm((f) => ({ ...f, [field]: e.target.checked }))
+
+  const pillPreviewDate = (field) => {
+    if (field === 'show_sample_release' && form.show_sample_release) {
+      return sampleReleaseDate(form.start_date)
+    }
+    if (field === 'show_ce_windows' && form.show_ce_windows && form.vsa_date) {
+      return ceWindowsDate(form.vsa_date)
+    }
+    if (field === 'show_remediation_window' && form.show_remediation_window) {
+      return remediationWindowDate(form.start_date)
+    }
+    return null
+  }
 
   const handleStartDateChange = (e) => {
     const startDate = e.target.value
@@ -75,6 +98,10 @@ export default function AssessmentModal({
     try {
       const payload = {
         ...form,
+        vsa_date: form.vsa_date || null,
+        show_sample_release: Boolean(form.show_sample_release),
+        show_ce_windows: Boolean(form.show_ce_windows),
+        show_remediation_window: Boolean(form.show_remediation_window),
         notes: form.notes.trim() || null,
       }
       await onSave(payload, assessment?.id)
@@ -258,6 +285,64 @@ export default function AssessmentModal({
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">VSA Date (optional)</label>
+              <input
+                type="date"
+                className="input-field"
+                value={form.vsa_date}
+                onChange={set('vsa_date')}
+              />
+            </div>
+            <div />
+          </div>
+
+          <div>
+            <label className="label">Calendar Reminders</label>
+            <p className="mb-3 text-xs text-slate-400">
+              Toggle extra calendar pills on or off. All are enabled by default.
+            </p>
+            <div className="space-y-2">
+              {CALENDAR_PILL_TOGGLES.map((pill) => {
+                const enabled = Boolean(form[pill.field])
+                const preview = pillPreviewDate(pill.field)
+                const needsVsa = pill.field === 'show_ce_windows' && !form.vsa_date
+                return (
+                  <label
+                    key={pill.field}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+                      enabled
+                        ? 'border-slate-200 bg-white'
+                        : 'border-slate-100 bg-slate-50 opacity-70'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      onChange={togglePill(pill.field)}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-accent focus:ring-accent"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-slate-800">{pill.label}</p>
+                      <p className="text-xs text-slate-500">{pill.hint}</p>
+                      {enabled && preview && (
+                        <p className="mt-0.5 text-xs font-medium text-slate-600">
+                          Shows on {preview}
+                        </p>
+                      )}
+                      {enabled && needsVsa && (
+                        <p className="mt-0.5 text-xs text-amber-600">
+                          Set a VSA date to show this pill
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                )
+              })}
             </div>
           </div>
 
