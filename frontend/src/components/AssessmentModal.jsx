@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X, Trash2, CheckCircle2, RotateCcw } from 'lucide-react'
+import { X, Trash2, CheckCircle2, RotateCcw, AlertTriangle } from 'lucide-react'
 import {
   ASSESSMENT_TYPES,
   CALENDAR_PILL_TOGGLES,
@@ -9,7 +9,9 @@ import {
   assessmentTypeStyle,
   ceWindowsDate,
   emptyForm,
+  formatDate,
   isCompleted,
+  remediationExceedsCeWindow,
   remediationWindowDate,
   sampleReleaseDate,
 } from '../utils'
@@ -76,6 +78,14 @@ export default function AssessmentModal({
 
   const togglePill = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e.target.checked }))
+
+  const ceWindowDate = form.vsa_date ? ceWindowsDate(form.vsa_date) : null
+  const remediationDate = form.start_date
+    ? remediationWindowDate(form.start_date)
+    : null
+  const remediationPastCe =
+    Boolean(form.vsa_date) &&
+    remediationExceedsCeWindow(form.start_date, form.vsa_date)
 
   const pillPreviewDate = (field) => {
     if (field === 'show_sample_release' && form.show_sample_release) {
@@ -343,6 +353,19 @@ export default function AssessmentModal({
                       />
                     </div>
                   </div>
+                  {remediationPastCe && (
+                    <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+                      <AlertTriangle
+                        size={16}
+                        className="mt-0.5 shrink-0 text-amber-600"
+                      />
+                      <p>
+                        The 30-day remediation window (
+                        {formatDate(remediationDate)}) would go past the CE+
+                        window ({formatDate(ceWindowDate)}, 90 days after VSA).
+                      </p>
+                    </div>
+                  )}
                   {!completed && (
                     <div className="mt-4">
                       <label className="label">Progress Status</label>
@@ -416,6 +439,13 @@ export default function AssessmentModal({
                                 Set a VSA date to show this pill
                               </p>
                             )}
+                            {enabled &&
+                              pill.field === 'show_remediation_window' &&
+                              remediationPastCe && (
+                                <p className="mt-0.5 text-xs text-amber-700">
+                                  This date is after the CE+ window
+                                </p>
+                              )}
                           </div>
                         </label>
                       )

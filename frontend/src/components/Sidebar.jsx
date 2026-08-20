@@ -127,7 +127,7 @@ function CompletedItem({ assessment, isSelected, onSelect }) {
 
 export default function Sidebar({ assessments, selectedId, onSelect }) {
   const { active, completed } = partitionAssessments(assessments)
-  const [completedOpen, setCompletedOpen] = useState(true)
+  const [completedOpen, setCompletedOpen] = useState(false)
 
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">

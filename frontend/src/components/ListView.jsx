@@ -1,4 +1,12 @@
-import { Building2, Calendar, CheckCircle2, Users } from 'lucide-react'
+import { useState } from 'react'
+import {
+  Building2,
+  Calendar,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Users,
+} from 'lucide-react'
 import {
   formatDateRange,
   groupByCB,
@@ -172,6 +180,7 @@ function EmptyState({ message, hint }) {
 }
 
 export default function ListView({ active, completed, groupByCb, onSelect }) {
+  const [completedOpen, setCompletedOpen] = useState(false)
   const hasActive = active.length > 0
   const hasCompleted = completed.length > 0
 
@@ -204,14 +213,23 @@ export default function ListView({ active, completed, groupByCb, onSelect }) {
 
       {hasCompleted && (
         <section>
-          <div className="mb-4 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCompletedOpen((open) => !open)}
+            className="mb-4 flex w-full items-center gap-2 text-left"
+          >
+            {completedOpen ? (
+              <ChevronDown size={16} className="text-slate-400" />
+            ) : (
+              <ChevronRight size={16} className="text-slate-400" />
+            )}
             <CheckCircle2 size={18} className="text-emerald-600" />
             <h2 className="text-sm font-semibold text-slate-800">Completed</h2>
             <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
               {completed.length}
             </span>
-          </div>
-          {renderList(completed, true)}
+          </button>
+          {completedOpen && renderList(completed, true)}
         </section>
       )}
     </div>

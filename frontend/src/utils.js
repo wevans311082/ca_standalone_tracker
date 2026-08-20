@@ -117,7 +117,7 @@ export const CALENDAR_PILL_TOGGLES = [
   {
     field: 'show_ce_windows',
     label: 'CE+ Windows',
-    hint: '90 days before VSA date',
+    hint: '90 days after VSA date',
   },
   {
     field: 'show_remediation_window',
@@ -157,16 +157,17 @@ export function addCalendarDays(dateStr, days) {
   return format(addDays(parseISO(dateStr), days), 'yyyy-MM-dd')
 }
 
-export function subtractCalendarDays(dateStr, days) {
-  return format(subDays(parseISO(dateStr), days), 'yyyy-MM-dd')
-}
-
 export function ceWindowsDate(vsaDate) {
-  return subtractCalendarDays(vsaDate, 90)
+  return addCalendarDays(vsaDate, 90)
 }
 
 export function remediationWindowDate(startDate) {
   return addCalendarDays(startDate, 30)
+}
+
+export function remediationExceedsCeWindow(startDate, vsaDate) {
+  if (!startDate || !vsaDate) return false
+  return remediationWindowDate(startDate) > ceWindowsDate(vsaDate)
 }
 
 export function ceWindowsTitle(customer) {

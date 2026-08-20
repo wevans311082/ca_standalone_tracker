@@ -28,7 +28,7 @@ const PILL_LEGEND = [
   {
     icon: Monitor,
     label: 'CE+ Windows',
-    hint: '90 days before VSA date',
+    hint: '90 days after VSA date',
     className: 'border-indigo-400 bg-indigo-50 text-indigo-700',
   },
   {
