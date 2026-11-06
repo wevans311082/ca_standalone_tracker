@@ -187,6 +187,48 @@ export function remediationWindowTitle(customer) {
   return `${customer} Remediation Window`
 }
 
+export function assessmentClipboardText(assessment) {
+  const status = isCompleted(assessment)
+    ? 'Complete'
+    : progressStatusLabel(assessment.progress_status)
+  const lines = [
+    'CE+ assessment',
+    `Customer: ${assessment.customer}`,
+    `Assessment: ${assessment.name}`,
+    `Type: ${assessmentTypeLabel(assessment.assessment_type)}`,
+    `Certification body: ${assessment.certification_body}`,
+    `Company size: ${assessment.company_size}`,
+    `Status: ${status}`,
+    `Assessment dates: ${formatDateRange(assessment.start_date, assessment.end_date)}`,
+    '',
+  ]
+
+  if (assessment.vsa_date) {
+    lines.push(`VSA date: ${formatDate(assessment.vsa_date)}`)
+    lines.push(
+      `CE+ Window deadline: ${formatDate(ceWindowsDate(assessment.vsa_date))}`,
+    )
+  } else {
+    lines.push('CE+ Window deadline: Not set (no VSA date)')
+  }
+
+  lines.push(
+    `Remediation window: ${formatDate(remediationWindowDate(assessment.start_date))}`,
+  )
+  lines.push(
+    `Sample release: ${formatDate(sampleReleaseDate(assessment.start_date))}`,
+  )
+
+  if (
+    assessment.vsa_date &&
+    remediationExceedsCeWindow(assessment.start_date, assessment.vsa_date)
+  ) {
+    lines.push('Note: The remediation window is after the CE+ window deadline.')
+  }
+
+  return lines.join('\n')
+}
+
 export const SAMPLE_SUBTASKS = [
   { field: 'sample_sampled', label: 'Sampled' },
   { field: 'sample_agents', label: 'Agents' },

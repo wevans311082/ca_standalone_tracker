@@ -1,8 +1,10 @@
+import { useEffect, useRef, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { Monitor, Package, Wrench } from 'lucide-react'
+import { Check, Copy, Monitor, Package, Wrench } from 'lucide-react'
 import {
+  assessmentClipboardText,
   cbColor,
   calendarEventEnd,
   ceWindowsDate,
@@ -17,6 +19,67 @@ import {
   REMEDIATION_COLOR,
   SAMPLE_SUBTASKS,
 } from '../utils'
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      // Fall through when the page is not a secure context.
+    }
+  }
+
+  const area = document.createElement('textarea')
+  area.value = text
+  area.setAttribute('readonly', '')
+  area.style.position = 'fixed'
+  area.style.left = '-9999px'
+  document.body.appendChild(area)
+  area.select()
+  let copied = false
+  try {
+    copied = document.execCommand('copy')
+  } catch {
+    copied = false
+  }
+  document.body.removeChild(area)
+  return copied
+}
+
+function stopEvent(event) {
+  event.preventDefault()
+  event.stopPropagation()
+}
+
+function CopyDetailsButton({ assessment }) {
+  const [copied, setCopied] = useState(false)
+  const timer = useRef(null)
+
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  const onCopy = async (event) => {
+    stopEvent(event)
+    const ok = await copyText(assessmentClipboardText(assessment))
+    if (!ok) return
+    setCopied(true)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <button
+      type="button"
+      className="fc-copy-details"
+      aria-label={copied ? 'Copied assessment details' : 'Copy assessment details'}
+      title={copied ? 'Copied' : 'Copy details for email'}
+      onClick={onCopy}
+      onMouseDown={stopEvent}
+    >
+      {copied ? <Check size={11} /> : <Copy size={11} />}
+    </button>
+  )
+}
 
 const PILL_LEGEND = [
   {
@@ -139,11 +202,12 @@ function buildRemediationEvents(assessments) {
     }))
 }
 
-function ReminderPillContent({ icon: Icon, title }) {
+function ReminderPillContent({ icon: Icon, title, assessment }) {
   return (
     <div className="fc-reminder-pill-content" title={title}>
       <Icon size={11} className="shrink-0" />
       <span className="fc-reminder-pill-label">{title}</span>
+      <CopyDetailsButton assessment={assessment} />
     </div>
   )
 }
@@ -182,6 +246,7 @@ function SampleReleaseContent({ assessment, onToggleSubtask }) {
         <span className="fc-sample-release-label">
           {sampleReleaseTitle(assessment.customer)}
         </span>
+        <CopyDetailsButton assessment={assessment} />
       </div>
       <div className="fc-sample-subtasks">
         {SAMPLE_SUBTASKS.map((task) => (
@@ -238,6 +303,7 @@ export default function CalendarView({
               <ReminderPillContent
                 icon={Monitor}
                 title={ceWindowsTitle(assessment.customer)}
+                assessment={assessment}
               />
             )
           }
@@ -246,13 +312,15 @@ export default function CalendarView({
               <ReminderPillContent
                 icon={Wrench}
                 title={remediationWindowTitle(assessment.customer)}
+                assessment={assessment}
               />
             )
           }
           return true
         }}
         eventClick={(info) => {
-          if (info.jsEvent.target.closest('.fc-sample-subtask')) return
+          const target = info.jsEvent.target
+          if (target.closest('.fc-sample-subtask, .fc-copy-details')) return
           onEventClick(info.event.extendedProps.assessment)
         }}
         dateClick={(info) => {
