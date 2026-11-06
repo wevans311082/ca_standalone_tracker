@@ -12,7 +12,9 @@ PROGRESS_STATUSES = (
     "on_hold",
 )
 
-ASSESSMENT_TYPES = ("willow", "danzel")
+ASSESSMENT_TYPES = ("danzel", "dcc_lvl_0")
+REMOVED_ASSESSMENT_TYPES = frozenset({"willow"})
+DEFAULT_ASSESSMENT_TYPE = "danzel"
 
 
 class Assessment(Base):
@@ -24,7 +26,7 @@ class Assessment(Base):
     certification_body: Mapped[str] = mapped_column(String(255), nullable=False)
     company_size: Mapped[str] = mapped_column(String(50), nullable=False)
     assessment_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="willow"
+        String(50), nullable=False, default=DEFAULT_ASSESSMENT_TYPE
     )
     start_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     end_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)

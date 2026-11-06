@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CalendarDays, List, Plus, Shield } from 'lucide-react'
 import { api } from './api'
-import { emptyForm, partitionAssessments } from './utils'
+import { emptyForm, isHiddenAssessment, partitionAssessments } from './utils'
 import AssessmentModal from './components/AssessmentModal'
 import Sidebar from './components/Sidebar'
 import CalendarView from './components/CalendarView'
@@ -22,7 +22,7 @@ export default function App() {
       api.listAssessments(),
       api.listCertificationBodies(),
     ])
-    setAssessments(data)
+    setAssessments(data.filter((assessment) => !isHiddenAssessment(assessment)))
     setCertificationBodies(cbs)
   }, [])
 

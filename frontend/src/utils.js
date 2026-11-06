@@ -8,13 +8,22 @@ export const COMPANY_SIZES = [
 ]
 
 export const ASSESSMENT_TYPES = [
-  { value: 'willow', label: 'Willow' },
   { value: 'danzel', label: 'Danzel' },
+  { value: 'dcc_lvl_0', label: 'DCC Lvl 0' },
 ]
 
+const HIDDEN_ASSESSMENT_TYPES = new Set(['willow'])
+
 const ASSESSMENT_TYPE_STYLES = {
-  willow: { bg: '#d1fae5', text: '#047857', accent: '#10b981' },
   danzel: { bg: '#ede9fe', text: '#6d28d9', accent: '#8b5cf6' },
+  dcc_lvl_0: { bg: '#e0f2fe', text: '#0369a1', accent: '#0284c7' },
+}
+
+const FALLBACK_TYPE_STYLE = { bg: '#f1f5f9', text: '#475569', accent: '#64748b' }
+
+export function isHiddenAssessment(assessment) {
+  const type = String(assessment?.assessment_type || '').trim().toLowerCase()
+  return HIDDEN_ASSESSMENT_TYPES.has(type)
 }
 
 export function assessmentTypeLabel(type) {
@@ -22,7 +31,7 @@ export function assessmentTypeLabel(type) {
 }
 
 export function assessmentTypeStyle(type) {
-  return ASSESSMENT_TYPE_STYLES[type] ?? ASSESSMENT_TYPE_STYLES.willow
+  return ASSESSMENT_TYPE_STYLES[type] ?? FALLBACK_TYPE_STYLE
 }
 
 export const PROGRESS_STATUSES = [
@@ -209,7 +218,7 @@ export const emptyForm = () => {
     customer: '',
     certification_body: '',
     company_size: COMPANY_SIZES[1],
-    assessment_type: 'willow',
+    assessment_type: 'danzel',
     start_date: today,
     end_date: today,
     progress_status: 'not_started',

@@ -32,7 +32,7 @@ def _rebuild_assessments_table(conn, columns: set[str]) -> None:
                 customer VARCHAR(255) NOT NULL,
                 certification_body VARCHAR(255) NOT NULL,
                 company_size VARCHAR(50) NOT NULL,
-                assessment_type VARCHAR(50) NOT NULL DEFAULT 'willow',
+                assessment_type VARCHAR(50) NOT NULL DEFAULT 'danzel',
                 start_date DATE NOT NULL,
                 end_date DATE NOT NULL,
                 progress_status VARCHAR(50) NOT NULL DEFAULT 'not_started',
@@ -63,9 +63,9 @@ def _rebuild_assessments_table(conn, columns: set[str]) -> None:
         else start_expr
     )
     assessment_type_expr = (
-        "COALESCE(assessment_type, 'willow')"
+        "COALESCE(NULLIF(trim(assessment_type), ''), 'danzel')"
         if "assessment_type" in columns
-        else "'willow'"
+        else "'danzel'"
     )
     progress_expr = (
         "COALESCE(progress_status, 'not_started')"
@@ -189,7 +189,7 @@ def migrate_db() -> None:
             conn.execute(
                 text(
                     "ALTER TABLE assessments ADD COLUMN assessment_type "
-                    "VARCHAR(50) DEFAULT 'willow' NOT NULL"
+                    "VARCHAR(50) DEFAULT 'danzel' NOT NULL"
                 )
             )
             columns = _table_columns(conn)
@@ -235,6 +235,15 @@ def migrate_db() -> None:
                 )
             except Exception:
                 _rebuild_assessments_table(conn, columns)
+
+        columns = _table_columns(conn)
+        if "assessment_type" in columns:
+            conn.execute(
+                text(
+                    "DELETE FROM assessments "
+                    "WHERE lower(trim(assessment_type)) = 'willow'"
+                )
+            )
 
 
 def get_db():
